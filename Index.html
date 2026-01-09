@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Gesture Arena - Управление жестами</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Заголовок -->
+        <header>
+            <h1>🎮 HAND GESTURE ARENA</h1>
+            <div class="game-info">
+                <div class="info-box">
+                    <span class="label">СЧЁТ:</span>
+                    <span id="score" class="value">0</span>
+                </div>
+                <div class="info-box">
+                    <span class="label">ЖИЗНИ:</span>
+                    <span id="lives" class="value">❤️❤️❤️</span>
+                </div>
+                <div class="info-box">
+                    <span class="label">УРОВЕНЬ:</span>
+                    <span id="level" class="value">1</span>
+                </div>
+                <div class="info-box">
+                    <span class="label">ЖЕСТ:</span>
+                    <span id="gesture" class="value">-</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Основная игровая зона -->
+        <div class="game-area">
+            <!-- Видео с камеры -->
+            <div class="camera-section">
+                <div class="video-container">
+                    <video id="input_video" class="video"></video>
+                    <canvas id="output_canvas" class="canvas"></canvas>
+                </div>
+                <div class="camera-controls">
+                    <button id="startCamera" class="btn start">🎥 ВКЛЮЧИТЬ КАМЕРУ</button>
+                    <button id="pauseGame" class="btn pause">⏸️ ПАУЗА</button>
+                    <button id="fullscreen" class="btn fullscreen">📺 НА ВЕСЬ ЭКРАН</button>
+                </div>
+            </div>
+
+            <!-- Игровое поле -->
+            <div class="arena-section">
+                <canvas id="gameCanvas"></canvas>
+                <div class="gesture-help">
+                    <h3>🖐️ УПРАВЛЕНИЕ ЖЕСТАМИ:</h3>
+                    <div class="gestures">
+                        <div class="gesture-item">
+                            <div class="gesture-icon">✊</div>
+                            <span>КУЛАК - АТАКА</span>
+                        </div>
+                        <div class="gesture-item">
+                            <div class="gesture-icon">✋</div>
+                            <span>ЛАДОНЬ - ЗАЩИТА</span>
+                        </div>
+                        <div class="gesture-item">
+                            <div class="gesture-icon">☝️</div>
+                            <span>1 ПАЛЕЦ - ВВЕРХ</span>
+                        </div>
+                        <div class="gesture-item">
+                            <div class="gesture-icon">✌️</div>
+                            <span>2 ПАЛЬЦА - ВПРАВО</span>
+                        </div>
+                        <div class="gesture-item">
+                            <div class="gesture-icon">🤟</div>
+                            <span>3 ПАЛЬЦА - ВЛЕВО</span>
+                        </div>
+                        <div class="gesture-item">
+                            <div class="gesture-icon">🖐️</div>
+                            <span>5 ПАЛЬЦЕВ - ВНИЗ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Миссии и цели -->
+        <div class="missions">
+            <h3>🎯 ТЕКУЩИЕ ЦЕЛИ:</h3>
+            <div class="mission-list">
+                <div class="mission" id="mission1">
+                    <input type="checkbox" disabled>
+                    <span>УНИЧТОЖИТЬ 10 ВРАГОВ (0/10)</span>
+                </div>
+                <div class="mission" id="mission2">
+                    <input type="checkbox" disabled>
+                    <span>СОБРАТЬ 5 БОНУСОВ (0/5)</span>
+                </div>
+                <div class="mission" id="mission3">
+                    <input type="checkbox" disabled>
+                    <span>ПРОЙТИ УРОВЕНЬ БЕЗ ПОТЕРЬ</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Лог жестов -->
+        <div class="gesture-log">
+            <h3>📝 ЛОГ ЖЕСТОВ:</h3>
+            <div class="log-content" id="gestureLog">
+                <div>Камера отключена. Нажмите "Включить камеру"</div>
+            </div>
+        </div>
+
+        <!-- Стартовый экран -->
+        <div class="start-screen" id="startScreen">
+            <div class="start-content">
+                <h2>🎮 HAND GESTURE ARENA</h2>
+                <p>Управляйте игрой жестами рук через камеру!</p>
+                
+                <div class="instructions">
+                    <h3>📋 ИНСТРУКЦИЯ:</h3>
+                    <ol>
+                        <li>Разрешите доступ к камере</li>
+                        <li>Держите руку в рамке камеры</li>
+                        <li>Используйте жесты для управления</li>
+                        <li>Уничтожайте врагов (кулак 👊)</li>
+                        <li>Защищайтесь от атак (ладонь ✋)</li>
+                        <li>Собирайте бонусы</li>
+                    </ol>
+                </div>
+
+                <div class="difficulty">
+                    <h3>⚡ СЛОЖНОСТЬ:</h3>
+                    <div class="difficulty-buttons">
+                        <button class="diff-btn active" data-diff="easy">ЛЁГКАЯ</button>
+                        <button class="diff-btn" data-diff="medium">СРЕДНЯЯ</button>
+                        <button class="diff-btn" data-diff="hard">СЛОЖНАЯ</button>
+                    </div>
+                </div>
+
+                <button id="startGame" class="btn start-game">🚀 НАЧАТЬ ИГРУ</button>
+                
+                <div class="tips">
+                    <p>💡 Совет: Используйте хорошее освещение и держите руку на расстоянии 30-50 см от камеры</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Игровое меню (пауза) -->
+        <div class="game-menu hidden" id="gameMenu">
+            <div class="menu-content">
+                <h2>⏸️ ПАУЗА</h2>
+                <button class="menu-btn" onclick="resumeGame()">▶️ ПРОДОЛЖИТЬ</button>
+                <button class="menu-btn" onclick="restartGame()">🔄 ЗАНОВО</button>
+                <button class="menu-btn" onclick="changeDifficulty()">⚡ СЛОЖНОСТЬ</button>
+                <button class="menu-btn" onclick="showControls()">🎮 УПРАВЛЕНИЕ</button>
+                <button class="menu-btn" onclick="exitGame()">🚪 ВЫЙТИ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрипт для MediaPipe Hands -->
+    <script src="script.js"></script>
+</body>
+</html>
